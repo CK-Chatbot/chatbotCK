@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./chatbot_ck
-        run: npm install
+        run: pip install -r requirements.txt
 
       - name: Install AWS CDK
         run: npm i -g aws-cdk
