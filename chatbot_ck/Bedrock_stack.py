@@ -2,7 +2,7 @@ import os
 from aws_cdk import (
     Stack,
     aws_s3 as s3,
-    aws_lambda as _lambda,
+    #aws_lambda as _lambda,
     CfnOutput,
     Duration as Duration,
     RemovalPolicy
