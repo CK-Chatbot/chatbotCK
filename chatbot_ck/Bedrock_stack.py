@@ -25,20 +25,16 @@ class BedrockStack(Stack):
             instruction= 'Use this knowledge base to answer questions about inquiries (FaQs, services offerings,...) related to Cloud Kinetics Company',
             description= 'This knowledge base contains the information about Cloud Kinetics.',                    
         )
-<<<<<<< HEAD
-
-        docBucket = s3.Bucket(self, 'DockBucket-OS',removal_policy=RemovalPolicy.DESTROY)
-=======
         
         # Create S3 bucket for Bedrock data source
         docBucket = s3.Bucket(self, 'DockBucket-OS', removal_policy=RemovalPolicy.DESTROY)
->>>>>>> ba7f2191594a8ec3e5a839bbfb77eb765a33941a
         dataSource = bedrock.S3DataSource(self, 'DataSource-OS',
             bucket= docBucket,
             knowledge_base=kb,
             data_source_name='CK-Sale-Assets',
             chunking_strategy= bedrock.ChunkingStrategy.FIXED_SIZE,
         )
+        
         
         CfnOutput(self, "KnowledgeBaseId", value=kb.knowledge_base_id)
         CfnOutput(self, 'DataSourceId', value= dataSource.data_source_id)
