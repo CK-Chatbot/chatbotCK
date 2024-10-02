@@ -36,6 +36,7 @@ class BedrockStack(Stack):
         )
         
         
+        
         CfnOutput(self, "KnowledgeBaseId", value=kb.knowledge_base_id)
         CfnOutput(self, 'DataSourceId', value= dataSource.data_source_id)
         CfnOutput(self, 'DocumentBucket', value= docBucket.bucket_name)

@@ -5,7 +5,8 @@ on:
     branches: ["main", "fix-node-version-and-cdk-app"]
 
 jobs:
-  aws_cdk:
+  # Step 1: Build the CDK project
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -19,12 +20,32 @@ jobs:
           node-version: 20.17.0
           cache: "npm"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         working-directory: ./
         run: pip install -r requirements.txt
 
       - name: Install AWS CDK
         run: npm i -g aws-cdk
+
+      - name: Synth stack
+        working-directory: ./
+        run: cdk synth
+
+  # Step 2: Deploy the CDK project
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build  # Chỉ chạy deploy sau khi job build thành công
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.17.0
+          cache: "npm"
 
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@master
@@ -33,12 +54,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: "ap-northeast-1"
-          
-
-      - name: Synth stack
-        working-directory: ./
-        run: cdk synth
 
       - name: Deploy stack
         working-directory: ./
-        run: cdk deploy --all
+        run: cdk deploy --all --require-approval never
+
+  # Step 3: Test the deployment
+  test:
+    runs-on: ubuntu-latest
+    needs: deploy  # Chỉ chạy test sau khi job deploy thành công
+    steps:
+      - name: Run tests to validate the deployment
+        run: |
+          echo "Running tests after deployment"
