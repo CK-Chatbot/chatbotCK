@@ -29,7 +29,6 @@ class BedrockStack(Stack):
         )
 
         docBucket = s3.Bucket(self, 'DockBucket-OS',removal_policy=RemovalPolicy.DESTROY)
-
         dataSource = bedrock.S3DataSource(self, 'DataSource-OS',
             bucket= docBucket,
             knowledge_base=kb,
