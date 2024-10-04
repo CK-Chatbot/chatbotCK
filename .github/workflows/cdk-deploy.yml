@@ -36,11 +36,3 @@ jobs:
 
       - name: Deploy stack
         run: cdk deploy --all --require-approval never
-
-  # Step 2: Test the deployment
-  test:
-    runs-on: ubuntu-latest
-    needs: build_deploy  # Only run test when deployed successfully
-    steps:
-      - name: Run tests to validate the deployment
-        run: echo "Running tests after deployment"
