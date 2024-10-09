@@ -6,8 +6,9 @@ on:
 
 jobs:
   # Step 1: Build and deploy the CDK project
-  build_deploy:
+  DEV:
     runs-on: ubuntu-latest
+    environment: DEV
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -40,5 +41,3 @@ jobs:
 
       - name: Deploy stack
         run: cdk deploy --all --require-approval never
-
-
