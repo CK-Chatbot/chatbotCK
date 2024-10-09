@@ -21,7 +21,6 @@ jobs:
           cache: "npm"
 
       - name: Install Python dependencies
-        working-directory: ./
         run: pip install -r requirements.txt
 
       - name: Install AWS CDK
@@ -40,7 +39,6 @@ jobs:
         run: cdk synth
 
       - name: Deploy stack
-        working-directory: ./
         run: cdk deploy --all --require-approval never
 
   # Step 2: Test the deployment

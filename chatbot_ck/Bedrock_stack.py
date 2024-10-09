@@ -18,7 +18,7 @@ class BedrockStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        
+
         # Create Knowledge Base
         kb = bedrock.KnowledgeBase(self, 'KnowledgeBase-OS', 
             embeddings_model= bedrock.BedrockFoundationModel.TITAN_EMBED_TEXT_V1,
