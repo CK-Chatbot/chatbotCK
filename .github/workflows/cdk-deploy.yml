@@ -39,7 +39,6 @@ jobs:
         working-directory: ./
         run: cdk synth
 
-  
       - name: Deploy stack
         working-directory: ./
         run: cdk deploy --all --require-approval never
