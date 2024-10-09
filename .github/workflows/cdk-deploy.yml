@@ -11,13 +11,13 @@ jobs:
     environment: 
       name: DEV
     env:
-      CDK_DEFAULT_ACCOUNT: ${{ vars.CDK_DEFAULT_ACCOUNT }}
-      CDK_DEFAULT_REGION: ${{ vars.CDK_DEFAULT_REGION }}
-      YOUR_BUCKET_NAME: ${{ vars.YOUR_BUCKET_NAME }}
+      CDK_DEFAULT_ACCOUNT: ${{ secrets.CDK_DEFAULT_ACCOUNT }}
+      CDK_DEFAULT_REGION: ${{ secrets.CDK_DEFAULT_REGION }}
+      YOUR_BUCKET_NAME: ${{ secrets.YOUR_BUCKET_NAME }}
 
     steps:
       - name: env
-        run: echo ${{ vars.CDK_DEFAULT_REGION }}
+        run: echo ${{ secrets.CDK_DEFAULT_REGION }}
 
       - name: Check out code
         uses: actions/checkout@v2
