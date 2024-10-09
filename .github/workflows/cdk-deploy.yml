@@ -6,9 +6,10 @@ on:
 
 jobs:
   # Step 1: Build and deploy the CDK project
-  DEV:
+  DeployDEV:
     runs-on: ubuntu-latest
-    environment: DEV
+    environment: 
+      name: DEV
     env:
       CDK_DEFAULT_ACCOUNT: ${{ vars.CDK_DEFAULT_ACCOUNT }}
       CDK_DEFAULT_REGION: ${{ vars.CDK_DEFAULT_REGION }}
