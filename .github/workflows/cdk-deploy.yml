@@ -34,7 +34,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: "ap-northeast-1"
+          
+      - name: Synth stack
+        working-directory: ./
+        run: cdk synth
 
+  
       - name: Deploy stack
         working-directory: ./
         run: cdk deploy --all --require-approval never
