@@ -2,43 +2,126 @@ name: CDK Deploy
 
 on:
   push:
-    branches: ["main", "fix-node-version-and-cdk-app"]
+    branches: ["fix-node-version-and-cdk-app"]
 
 jobs:
-  aws_cdk:
+  # Step 1: Check for changes in Knowledge Base and Streamlit App
+  check_changes:
     runs-on: ubuntu-latest
+    outputs:
+      knowledge-base-changed: ${{ steps.check_kb.outputs.changed }}
+      streamlit-app-changed: ${{ steps.check_app.outputs.changed }}
     steps:
-      - name: Check out code
+      # Check Knowledge Base Stack changes
+      - name: Check Knowledge Base Stack changes
+        id: check_kb
+        run: |
+          if git diff --quiet HEAD^ HEAD ./chatbot_ck/Bedrock_stack.py/; then
+            echo "::set-output name=changed::false"
+          else
+            echo "::set-output name=changed::true"
+          fi
+
+      # Check Streamlit App Stack changes
+      - name: Check Streamlit App Stack changes
+        id: check_app
+        run: |
+          if git diff --quiet HEAD^ HEAD ./chatbot_ck/streamlit_stack.py/; then
+            echo "::set-output name=changed::false"
+          else
+            echo "::set-output name=changed::true"
+          fi
+          
+   # Step 2: Build and push Docker image (if Streamlit app has changed)
+  build_and_push_image:
+    runs-on: ubuntu-latest
+    needs: check_changes
+    if: ${{ needs.check_changes.outputs['streamlit-app-changed'] == 'true' }}
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 2
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image to ECR
+        run: |
+          IMAGE_NAME="streamlit-chatbot"
+          REGION="${{ secrets.CDK_DEFAULT_REGION }}"
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ECR_REPOSITORY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}"
+
+          # Build Docker image
+          docker build -t ${ECR_REPOSITORY}:latest ./streamlit_repo/
+
+          # Push to ECR
+          docker push ${ECR_REPOSITORY}:latest
+
+  # Step 3: Deploy the Knowledge Base Stack (if changes are detected)
+  deploy_knowledge_base:
+    runs-on: ubuntu-latest
+    needs: check_changes
+    if: ${{ needs.check_changes.outputs['knowledge-base-changed'] == 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Setup Node.js environment
         uses: actions/setup-node@v2
         with:
-          node-version: 20
+          node-version: 20.17.0
           cache: "npm"
 
-      - name: Install dependencies
-        working-directory: ./chatbot_ck
-        run: npm install
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
 
       - name: Install AWS CDK
         run: npm i -g aws-cdk
 
-      - name: Configure aws credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: "ap-northeast-1"
-          
 
-      - name: Synth stack
-        working-directory: ./chatbot_ck
-        run: cdk synth
+      - name: Deploy Knowledge Base Stack
+        run: cdk deploy KnowledgeBaseStack --require-approval never
 
-      - name: Deploy stack
-        working-directory: ./chatbot_ck
-        run: cdk deploy --all --require-approval never
+  # Step 4: Deploy Streamlit App Stack (if Streamlit app or Knowledge Base has changed)
+  deploy_streamlit_app:
+    runs-on: ubuntu-latest
+    needs: [check_changes, deploy_knowledge_base]
+    if: ${{ needs.check_changes.outputs['streamlit-app-changed'] == 'true' || needs.check_changes.outputs['knowledge-base-changed'] == 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20.17.0
+          cache: "npm"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install AWS CDK
+        run: npm i -g aws-cdk
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: "ap-northeast-1"
+
+      - name: Deploy Streamlit App Stack
+        run: cdk deploy StreamlitAppStack --require-approval never
