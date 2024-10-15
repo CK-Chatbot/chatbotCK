@@ -63,8 +63,10 @@ jobs:
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REPOSITORY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}"
 
+          # direct to streamlit_repo
+          cd ./chatbot_ck/streamlit_repo/
           # Build Docker image
-          docker build -t ${ECR_REPOSITORY}:latest ./streamlit_repo/
+          docker build -t ${ECR_REPOSITORY}:latest .
 
           # Push to ECR
           docker push ${ECR_REPOSITORY}:latest
