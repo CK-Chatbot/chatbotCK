@@ -48,7 +48,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.CDK_DEFAULT_REGION }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
