@@ -57,6 +57,11 @@ jobs:
 
       - name: Create ECR repository if it doesn't exist
         run: |
+          IMAGE_NAME="streamlit-chatbot"
+          REGION="ap-northeast-1"
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ECR_REPOSITORY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}"
+          
           if ! aws ecr describe-repositories --repository-names ${ECR_REPOSITORY} > /dev/null 2>&1; then
             echo "Creating ECR repository: ${ECR_REPOSITORY}"
             aws ecr create-repository --repository-name ${ECR_REPOSITORY}
