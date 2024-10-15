@@ -55,16 +55,25 @@ jobs:
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Create ECR repository if it doesn't exist
+        run: |
+          if ! aws ecr describe-repositories --repository-names ${ECR_REPOSITORY} > /dev/null 2>&1; then
+            echo "Creating ECR repository: ${ECR_REPOSITORY}"
+            aws ecr create-repository --repository-name ${ECR_REPOSITORY}
+          else
+            echo "ECR repository ${ECR_REPOSITORY} already exists"
+          fi
+
       - name: Build and push Docker image to ECR
         run: |
-          echo "${{ secrets.CDK_DEFAULT_REGION }}"
           IMAGE_NAME="streamlit-chatbot"
           REGION="ap-northeast-1"
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REPOSITORY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}"
+
           # direct to streamlit_repo
-          
           cd ./chatbot_ck/streamlit_repo/
+
           # Build Docker image
           docker build -t ${ECR_REPOSITORY}:latest .
 
@@ -112,7 +121,7 @@ jobs:
       - name: Deploy Knowledge Base Stack
         run: |
           source venv/bin/activate
-          cdk deploy KnowledgeBaseStack --require-approval never
+          cdk deploy BedrockStack --require-approval never
 
   # Step 4: Deploy Streamlit App Stack (if Streamlit app or Knowledge Base has changed)
   deploy_streamlit_app:
@@ -155,4 +164,4 @@ jobs:
       - name: Deploy Streamlit App Stack
         run: |
           source venv/bin/activate
-          cdk deploy StreamlitAppStack --require-approval never
+          cdk deploy StreamlitStack --require-approval never
