@@ -57,9 +57,9 @@ jobs:
 
       - name: Build and push Docker image to ECR
         run: |
-          echo $(aws sts get-caller-identity --query Account --output text)
+          echo "${{ secrets.CDK_DEFAULT_REGION }}"
           IMAGE_NAME="streamlit-chatbot"
-          REGION="${{ secrets.CDK_DEFAULT_REGION }}"
+          REGION="ap-northeast-1"
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REPOSITORY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}"
 
