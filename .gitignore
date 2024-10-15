@@ -3,7 +3,7 @@ __pycache__
 .pytest_cache
 .venv
 *.egg-info
-
+my_venv
 # CDK asset staging directory
 .cdk.staging
 cdk.out

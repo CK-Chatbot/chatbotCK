@@ -51,6 +51,7 @@ jobs:
 
       - name: Build and push Docker image to ECR
         run: |
+          echo $(aws sts get-caller-identity --query Account --output text)
           IMAGE_NAME="streamlit-chatbot"
           REGION="${{ secrets.CDK_DEFAULT_REGION }}"
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -105,6 +106,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [check_changes, deploy_knowledge_base]
     if: ${{ needs.check_changes.outputs['streamlit-app-changed'] == 'true' || needs.check_changes.outputs['knowledge-base-changed'] == 'true' }}
+    environment: 
+      name: DEV
+    env:
+      CDK_DEFAULT_ACCOUNT: ${{ secrets.CDK_DEFAULT_ACCOUNT }}
+      CDK_DEFAULT_REGION: ${{ secrets.CDK_DEFAULT_REGION }}
+      YOUR_BUCKET_NAME: ${{ secrets.YOUR_BUCKET_NAME }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
