@@ -2,7 +2,7 @@ name: CDK Deploy
 
 on:
   push:
-    branches: ["fix-node-version-and-cdk-app"]
+    branches: ["test"]
 
 jobs:
   # Step 1: Check for changes in Knowledge Base and Streamlit App
