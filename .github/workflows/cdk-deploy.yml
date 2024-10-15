@@ -49,18 +49,16 @@ jobs:
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push Docker image to ECR
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.ap-northeast-1.amazonaws.com
+
+      - name: Set variables
         run: |
           IMAGE_NAME="streamlit-chatbot"
-          REGION="${{ secrets.CDK_DEFAULT_REGION }}"
+          REGION="ap-northeast-1"
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           ECR_REPOSITORY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}"
-
-          # Build Docker image
-          docker build -t ${ECR_REPOSITORY}:latest ./streamlit_repo/
-
-          # Push to ECR
-          docker push ${ECR_REPOSITORY}:latest
 
   # Step 3: Deploy the Knowledge Base Stack (if changes are detected)
   deploy_knowledge_base:
