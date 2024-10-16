@@ -61,13 +61,14 @@ jobs:
           REGION="ap-northeast-1"
           ACCOUNT_ID=${{ secrets.CDK_DEFAULT_ACCOUNT }}
           ECR_REPOSITORY="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}"
-          
-          if ! aws ecr describe-repositories --repository-names ${ECR_REPOSITORY} > /dev/null 2>&1; then
+
+          if ! aws ecr describe-repositories --repository-names ${ECR_REPOSITORY} --region ${REGION} > /dev/null 2>&1; then
             echo "Creating ECR repository: ${ECR_REPOSITORY}"
-            aws ecr create-repository --repository-name ${ECR_REPOSITORY}
+            aws ecr create-repository --repository-name ${ECR_REPOSITORY} --region ${REGION}
           else
             echo "ECR repository ${ECR_REPOSITORY} already exists"
           fi
+
 
       - name: Build and push Docker image to ECR
         run: |
