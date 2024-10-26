@@ -11,5 +11,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@cdklabs/generative-ai-cdk-constructs": "^0.1.275"
+  }
 }

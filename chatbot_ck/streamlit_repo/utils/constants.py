@@ -1,9 +1,9 @@
 from enum import Enum
 import os
-region = os.getenv("CDK_DEFAULT_REGION")
+region = "ap-northeast-1"
 # get knowledge base id from environment variable
-kb_id = os.getenv("KNOWLEDGE_BASE_ID")
-account_id = os.getenv("CDK_DEFAULT_ACCOUNT")
+kb_id = "VN9ZMSGG9T"
+account_id = "571600861702"
 # print(region,kb_id,account_id)
 
 class ModelId(str, Enum):
