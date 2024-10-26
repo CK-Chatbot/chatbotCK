@@ -25,6 +25,8 @@ def generate_presigned_url(bucket_uri):
     except ClientError as e:
         st.error(f"Error generating presigned URL: {e}")
 
+
+
 st.title("Financial Chatbot using Knowledge Bases for Amazon Bedrock")
 
 sessionId = ""
@@ -52,7 +54,11 @@ if prompt := st.chat_input("What is up?"):
     st.chat_message("user").markdown(question)
 
     # Call lambda function to get response from the model
-    payload = {"question": prompt, "sessionId": st.session_state['sessionId']}
+    payload = {
+        "question": prompt, 
+        "sessionId": st.session_state['sessionId'],
+        "conversationHistory": st.session_state.messages
+    }
     # print(json.dumps(payload))
     # result = lambda_client.invoke(
     #             FunctionName='InvokeKnowledgeBase',
@@ -71,6 +77,7 @@ if prompt := st.chat_input("What is up?"):
 
     # Add user input to chat history
     st.session_state.messages.append({"role": "user", "content": question})
+    # conversation_manager.add_message("user", question)
 
     # Display assistant response in chat message container
     with st.chat_message("assistant"):
@@ -78,6 +85,7 @@ if prompt := st.chat_input("What is up?"):
         url_array=[]
         for citation in citations:
             display_text = citation['generatedResponsePart']['textResponsePart']['text']
+
             st.markdown(display_text)
             display_link=''
             for reference in citation['retrievedReferences']:
@@ -90,11 +98,13 @@ if prompt := st.chat_input("What is up?"):
                 if url_webLocation is not None:
                     web_presigned_url = url_webLocation
                     url_array.append(web_presigned_url)
+        if(len(citations)==0):
+            st.markdown(answer)
+        print(citations)
         for i,url in enumerate(url_array):
             display_link = f"[Doc link {i+1}]({url})"
             st.markdown(display_link, help=help_text)
-
-
-
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": answer})
+    
+    # conversation_manager.add_message("assistant", answer, citations)

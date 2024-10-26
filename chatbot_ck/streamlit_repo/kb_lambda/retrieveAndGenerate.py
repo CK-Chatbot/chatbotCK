@@ -45,7 +45,8 @@ def retrieveAndGenerate(query, kbId, model_arn, sessionId):
         )
 
 def lambda_handler(event, context):
-    query = event["question"]
+    question = event["question"]
+    query = question
     sessionId = event["sessionId"]
     response = retrieveAndGenerate(query, kb_id, model_arn, sessionId)
     generated_text = response['output']['text']
@@ -57,3 +58,31 @@ def lambda_handler(event, context):
         'body': {"question": query.strip(), "answer": generated_text.strip(), "sessionId":sessionId, "citations":citations}
     }
     
+def prompt_generator(input_text, history):
+    prompt = """User: 
+        <Task>
+            Your goal is to answer questions about inquiries (FaQs, services offerings,...) related to Cloud Kinetics Company.
+        </Task>
+        <instructions>
+            1. Retrieving relevant information from the company website and this prompt.
+            2. Augmenting responses with contextual information
+            3. Generating natural, coherent answers specific to inquiries
+        </instructions>
+        Here is the conversational history (between the user and you) prior to the question. It could be empty if there is no history:
+        <history>
+        +""" + str(history) + """+
+        </history>
+        Here is the user's question:
+        <question>
+        +""" + str(input_text) + """+
+        </question>
+       <execution_instructions>
+
+       </execution_instructions>
+    """
+    print(prompt)
+    for message in history:
+        if message["role"] == "user":
+            prompt = message["content"]
+            break
+    return prompt

@@ -62,7 +62,6 @@ class BedrockStack(Stack):
 
         # Grant permissions for Bedrock
         kb.role.attach_inline_policy(bedrock_iam_policy)
-
         #Connect data source to knowledge base
         dataSource = bedrock.S3DataSource(self, 'DataSource-OS',
             bucket= docBucket,
