@@ -66,7 +66,7 @@ class BedrockStack(Stack):
             bucket= docBucket,
             knowledge_base=kb,
             data_source_name='CK-Sale-Assets',
-            chunking_strategy= bedrock.ChunkingStrategy.semantic(breakpoint_percentile_threshold= 90,buffer_size=1,chunk_size=300),
+            chunking_strategy= bedrock.ChunkingStrategy.semantic(breakpoint_percentile_threshold= 90,buffer_size=1,max_tokens=300),
             parsing_strategy= bedrock.ParsingStategy.foundation_model(
                 parsing_model= bedrock.BedrockFoundationModel.ANTHROPIC_CLAUDE_HAIKU_V1_0.as_i_model(self),
             )
