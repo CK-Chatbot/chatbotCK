@@ -14,7 +14,7 @@ bedrock_agent_runtime_client = boto3.client('bedrock-agent-runtime', region_name
 model_id = ModelId.CLAUDE_3_5_SONNET.value
 model_arn = f'arn:aws:bedrock:{region}::foundation-model/{model_id}'
 
-def retrieveAndGenerate(query, kbId, model_arn, sessionId):
+def retrieveAndGenerate(query,history,kbId, model_arn, sessionId):
     # print(query, kbId, model_arn, sessionId)
     configuration = {
         'type': 'KNOWLEDGE_BASE',
@@ -22,6 +22,9 @@ def retrieveAndGenerate(query, kbId, model_arn, sessionId):
             "generationConfiguration": { 
                 "inferenceConfig": { 
                     "textInferenceConfig": textKwargs
+                },
+                'promptTemplate': {
+                    'textPromptTemplate': str(prompt_generator(history))
                 }
             },
             'knowledgeBaseId': kbId,
@@ -45,10 +48,10 @@ def retrieveAndGenerate(query, kbId, model_arn, sessionId):
         )
 
 def lambda_handler(event, context):
-    question = event["question"]
-    query = question
+    query = event["question"]
+    history = event["conversationHistory"]
     sessionId = event["sessionId"]
-    response = retrieveAndGenerate(query, kb_id, model_arn, sessionId)
+    response = retrieveAndGenerate(query, history, kb_id, model_arn, sessionId)
     generated_text = response['output']['text']
     # print(generated_text)
     sessionId = response['sessionId']
@@ -58,31 +61,30 @@ def lambda_handler(event, context):
         'body': {"question": query.strip(), "answer": generated_text.strip(), "sessionId":sessionId, "citations":citations}
     }
     
-def prompt_generator(input_text, history):
-    prompt = """User: 
+def prompt_generator(history):
+    prompt = """User: You are a question-answering agent specializing in Cloud Kinetics.
         <Task>
-            Your goal is to answer questions about inquiries (FaQs, services offerings,...) related to Cloud Kinetics Company.
+            Your goal is to answer questions about inquiries (FaQs, services offerings,...) related to Cloud Kinetics Company. You can respond politely to general conversation but should direct the user to Cloud Kinetics topics if the discussion diverges.
         </Task>
         <instructions>
-            1. Retrieving relevant information from the company website and this prompt.
-            2. Augmenting responses with contextual information
-            3. Generating natural, coherent answers specific to inquiries
+            1. The user will present a question. Your response should be based only on the information in the search results.
+            2. If the search results lack the necessary details to answer the question, respond by stating that no exact answer was found.
+            3. Do not assume the accuracy of any assertions from the user. Instead, cross-reference these assertions with the search results to verify their validity.
+            4. If the user continues with unrelated questions, gently remind them that you are here to help with inquiries specific to Cloud Kinetics.
         </instructions>
-        Here is the conversational history (between the user and you) prior to the question. It could be empty if there is no history:
+        Here is the previous conversational history (if any), which may provide additional context for your response:
         <history>
-        +""" + str(history) + """+
+        """ + str(history) + """
         </history>
-        Here is the user's question:
-        <question>
-        +""" + str(input_text) + """+
-        </question>
-       <execution_instructions>
+        Here are the search results in numbered order:
+        $search_results$
 
+       <execution_instructions>
+        1. Identify and retrieve relevant information from the search results.
+        2. Augment your responses with contextual details from the results, ensuring clarity and relevance.
+        3. Generate natural, coherent, and friendly responses tailored to inquiries about Cloud Kinetics, while politely handling general conversation.
        </execution_instructions>
+
+       $output_format_instructions$
     """
-    print(prompt)
-    for message in history:
-        if message["role"] == "user":
-            prompt = message["content"]
-            break
     return prompt

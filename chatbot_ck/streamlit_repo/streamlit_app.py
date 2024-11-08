@@ -2,10 +2,13 @@ import streamlit as st
 import boto3
 import json
 from botocore.exceptions import ClientError
-from kb_lambda import retrieveAndGenerate
+from kb_lambda import retrieveAndGenerate,uploadFile
 #import random
 #import string
 from utils.constants import *
+import time
+
+
 session = boto3.Session(region_name=region)
 lambda_client = session.client('lambda')
 
@@ -39,6 +42,7 @@ if "messages" not in st.session_state:
 
 # Initialize session id
 if 'sessionId' not in st.session_state:
+    st.session_state["count_time"]= time.time()
     st.session_state['sessionId'] = sessionId
 
 # Display chat messages from history on app rerun
@@ -48,11 +52,9 @@ for message in st.session_state.messages:
 
 # React to user input
 if prompt := st.chat_input("What is up?"):
-
     # Display user input in chat message container
     question = prompt
     st.chat_message("user").markdown(question)
-
     # Call lambda function to get response from the model
     payload = {
         "question": prompt, 
@@ -67,7 +69,6 @@ if prompt := st.chat_input("What is up?"):
     # result = json.loads(result['Payload'].read().decode("utf-8"))
     result = retrieveAndGenerate.lambda_handler(event=payload, context=None)
     # print(result)
-
     answer = result['body']['answer']
     sessionId = result['body']['sessionId']
     #Add citations
@@ -85,7 +86,6 @@ if prompt := st.chat_input("What is up?"):
         url_array=[]
         for citation in citations:
             display_text = citation['generatedResponsePart']['textResponsePart']['text']
-
             st.markdown(display_text)
             display_link=''
             for reference in citation['retrievedReferences']:
@@ -100,11 +100,27 @@ if prompt := st.chat_input("What is up?"):
                     url_array.append(web_presigned_url)
         if(len(citations)==0):
             st.markdown(answer)
-        print(citations)
         for i,url in enumerate(url_array):
             display_link = f"[Doc link {i+1}]({url})"
             st.markdown(display_link, help=help_text)
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": answer})
-    
+        st.feedback(options="thumbs", key=None, disabled=False, on_change=None, args=None, kwargs=None)
+        # Add assistant response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+        st.session_state['count_time']=time.time()
+        
     # conversation_manager.add_message("assistant", answer, citations)
+
+
+# if st.session_state["sessionId"] !="" :
+#     print(st.session_state['sessionId'])
+#     if 'count_time' in st.session_state:
+#         count_time = st.session_state['count_time']
+#         print("Count time: ", count_time)
+#         if(time.time()-count_time>10):
+#             st.markdown("Do you have any questions?")
+#         if (time.time()-count_time>15):
+#             # uploadFile.upload_json_data(st.session_state.messages, st.session_state['sessionId'], bucket_name)
+#             st.rerun()
+# # if 'sessionId' in st.session_state:
+# #     sessionId = st.session_state['sessionId']
+ 

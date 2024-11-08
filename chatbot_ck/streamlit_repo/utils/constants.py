@@ -2,9 +2,19 @@ from enum import Enum
 import os
 region = "ap-northeast-1"
 # get knowledge base id from environment variable
-kb_id = "VN9ZMSGG9T"
+kb_id = "NBORXANJCX"
 account_id = "571600861702"
+bucket_name = "genaibucketesttingsss"
 # print(region,kb_id,account_id)
+
+# from enum import Enum
+# import os
+# region = os.getenv("CDK_DEFAULT_REGION")
+# # get knowledge base id from environment variable
+# kb_id = os.getenv("KNOWLEDGE_BASE_ID")
+# account_id = os.getenv("CDK_DEFAULT_ACCOUNT")
+# # print(region,kb_id,account_id)
+
 
 class ModelId(str, Enum):
     CLAUDE_3_HAIKU = "anthropic.claude-3-haiku-20240307-v1:0"
