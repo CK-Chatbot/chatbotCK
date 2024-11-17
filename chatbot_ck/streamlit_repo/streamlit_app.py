@@ -7,7 +7,8 @@ from kb_lambda import retrieveAndGenerate,uploadFile
 #import string
 from utils.constants import *
 import time
-
+from chatdb.historyDb import ChatHistory
+from llama_index.core.llms import ChatMessage, MessageRole
 
 session = boto3.Session(region_name=region)
 lambda_client = session.client('lambda')
@@ -40,16 +41,23 @@ sessionId = ""
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Initialize session id
-if 'sessionId' not in st.session_state:
-    st.session_state["count_time"]= time.time()
-    st.session_state['sessionId'] = sessionId
+if "sessionId" not in st.session_state:
+    st.session_state['sessionId'] = ""
+
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
+# # Integrate with message history
+# chain_with_history = RunnableWithMessageHistory(
+#     chain,
+#     lambda session_id: history # Reference DynamoDBChatMessageHistory
+#     input_messages_key="question",
+#     history_messages_key="history",
+# )
+    # response = chain_with_history.invoke({"question": "Hi! I'm Bob"}, config=config)
+    # print(response)
 # React to user input
 if prompt := st.chat_input("What is up?"):
     # Display user input in chat message container
@@ -73,11 +81,13 @@ if prompt := st.chat_input("What is up?"):
     sessionId = result['body']['sessionId']
     #Add citations
     citations = result['body']['citations']
-
-    st.session_state['sessionId'] = sessionId
+    if (st.session_state['sessionId'] == ""):
+        st.session_state['sessionId'] = sessionId
+    history = ChatHistory(session_id=st.session_state['sessionId'])
 
     # Add user input to chat history
     st.session_state.messages.append({"role": "user", "content": question})
+    history.add_message(ChatMessage(role=MessageRole.USER, content=question))
     # conversation_manager.add_message("user", question)
 
     # Display assistant response in chat message container
@@ -106,8 +116,8 @@ if prompt := st.chat_input("What is up?"):
         st.feedback(options="thumbs", key=None, disabled=False, on_change=None, args=None, kwargs=None)
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": answer})
-        st.session_state['count_time']=time.time()
-        
+        history.add_message(ChatMessage(role=MessageRole.ASSISTANT, content=answer))
+        print(history.get_messages())
     # conversation_manager.add_message("assistant", answer, citations)
 
 

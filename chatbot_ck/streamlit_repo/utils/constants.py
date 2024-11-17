@@ -2,7 +2,7 @@ from enum import Enum
 import os
 region = "ap-northeast-1"
 # get knowledge base id from environment variable
-kb_id = "NBORXANJCX"
+kb_id = "MXKKMOHVMV"
 account_id = "571600861702"
 bucket_name = "genaibucketesttingsss"
 # print(region,kb_id,account_id)
