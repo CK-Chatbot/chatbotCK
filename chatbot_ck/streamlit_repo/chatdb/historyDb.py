@@ -16,7 +16,7 @@ class ChatHistory:
     def __init__(self, session_id):
         self.session_id = session_id
         self.chat_store = DynamoDBChatStore(
-            table_name="EXAMPLE_TABLE",profile_name="default")
+            table_name="EXAMPLE_TABLE")
     def getSessionId(self):
         return self.session_id
     # Getting the history with a key of "SessionID"
@@ -35,6 +35,9 @@ class ChatHistory:
     
     def get_keys(self):
         return self.chat_store.get_keys()
+    
+    def delete_key(self, key):
+        self.chat_store.delete_message(key)
     
 
 

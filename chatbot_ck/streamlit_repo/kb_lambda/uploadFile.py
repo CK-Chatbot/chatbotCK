@@ -6,6 +6,7 @@ import json
 import boto3    
 from datetime import datetime
 from utils.constants import *
+
 def upload_json_data(json_data, sessionID, bucket_name, object_name=None):
     """Upload a file json_data to an S3 bucket
     :param file_name: File to upload

@@ -2,18 +2,18 @@ from enum import Enum
 import os
 region = "ap-northeast-1"
 # get knowledge base id from environment variable
-kb_id = "MXKKMOHVMV"
+kb_id = "Y6EJDFTC9G"
 account_id = "571600861702"
 bucket_name = "genaibucketesttingsss"
 # print(region,kb_id,account_id)
 
-# from enum import Enum
-# import os
+from enum import Enum
+import os
 # region = os.getenv("CDK_DEFAULT_REGION")
 # # get knowledge base id from environment variable
 # kb_id = os.getenv("KNOWLEDGE_BASE_ID")
 # account_id = os.getenv("CDK_DEFAULT_ACCOUNT")
-# # print(region,kb_id,account_id)
+# print(region,kb_id,account_id)
 
 
 class ModelId(str, Enum):

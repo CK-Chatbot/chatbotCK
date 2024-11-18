@@ -264,6 +264,17 @@ class StreamlitStack(Stack):
                 resources=['*'],  # place secret ARN here
             )
         )
+        streamlit_service.task_definition.add_to_task_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    'dynamodb:*',
+                ],
+                resources=[
+                    'arn:aws:dynamodb:ap-northeast-1:571600861702:table/*'
+                ],
+            )
+        )
         # Attach the Bedrock permissions to the task role
         streamlit_service.task_definition.task_role.attach_inline_policy(bedrock_iam_policy)
 
