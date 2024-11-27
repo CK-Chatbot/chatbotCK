@@ -7,7 +7,8 @@ from llama_index.storage.chat_store.dynamodb.base import DynamoDBChatStore
 messages = [
     ChatMessage(role=MessageRole.USER, content="Who are you?"),
     ChatMessage(
-        role=MessageRole.ASSISTANT, content="I am your helpful AI assistant."
+        role=MessageRole.ASSISTANT, content="I am your helpful AI assistant.",
+        additional_kwargs={"thumb": ""}
     ),
 ]
 
@@ -39,6 +40,12 @@ class ChatHistory:
     def delete_key(self, key):
         self.chat_store.delete_message(key)
     
+    def delete_last_message(self, key):
+        last_message = self.chat_store.get_messages(key)[-1]
+        self.chat_store.delete_last_message(key)
+        return last_message
+
+    
 
 
        
@@ -48,6 +55,6 @@ class ChatHistory:
 
 
 # Appending a message to an existing chat history
-message = ChatMessage(role=MessageRole.USER, content="What can you do?")
+# message = ChatMessage(role=MessageRole.USER, content="What can you do?")
 
 # print(chat_store.get_messages("123"))

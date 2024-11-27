@@ -14,6 +14,10 @@ def initialize_session_state():
         st.session_state.sessionId = ""
     if "selected_session" not in st.session_state:
         st.session_state.selected_session = None
+    if "feedback" not in st.session_state:
+        st.session_state.feedback = None
+    if "click" not in st.session_state:
+        st.session_state.click = 0
 
 def generate_presigned_url(bucket_uri):
     s3 = boto3.client('s3')
@@ -77,11 +81,24 @@ def delete_session(session_id):
     except Exception as e:
         st.error(f"Error deleting session: {e}")
         return False
+def click_feedback():
+    st.session_state['click'] = 1 
+
+def on_feedback_change(feedback_value):
+    text = {f"Feedback: {' Thumbs Up' if feedback_value else ' Thumbs Down'}"}
+    history = ChatHistory(session_id=st.session_state.selected_session)
+    last_content = history.delete_last_message(st.session_state.selected_session)
+    last_content.additional_kwargs["Feadback"] = text
+    history.add_message(last_content)
+
 
 def main():
-    st.title("Financial Chatbot using Knowledge Bases for Amazon Bedrock")
+    st.title("Chatbot using Knowledge Bases for Amazon Bedrock")
     initialize_session_state()
-    
+    if st.session_state['click'] == 1:
+        feedback_value = st.session_state['feedback']
+        on_feedback_change(feedback_value)
+        st.session_state['click'] = 0
     # Create sidebar for session management
     with st.sidebar:
         st.header("Session Management")
@@ -164,11 +181,17 @@ def main():
         # Display assistant response
         with st.chat_message("assistant"):
             handle_citations(citations, answer)
-            st.feedback(options="thumbs")
-            
-            # Add assistant response
+            thumbs = st.feedback(
+                options='thumbs', 
+                # key=f'feedback', 
+                on_change=click_feedback
+            )
+            st.session_state['feedback'] = thumbs    
             st.session_state.messages.append({"role": "assistant", "content": answer})
-            history.add_message(ChatMessage(role=MessageRole.ASSISTANT, content=answer))
+            history.add_message(ChatMessage(role=MessageRole.ASSISTANT, content=answer, additional_kwargs={"Feedback": "None"}))
+                  
+            
 
 if __name__ == "__main__":
     main()
+
