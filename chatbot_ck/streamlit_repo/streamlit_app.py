@@ -93,7 +93,7 @@ def on_feedback_change(feedback_value):
 
 
 def main():
-    st.title("Chatbot using Knowledge Bases for Amazon Bedrock")
+    st.title("Cloud Kinetics Customer Service Chatbot")
     initialize_session_state()
     if st.session_state['click'] == 1:
         feedback_value = st.session_state['feedback']
